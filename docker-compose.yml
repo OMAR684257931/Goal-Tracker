@@ -1,0 +1,66 @@
+name: "goaltracker"
+services:
+  # NestJS API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: goaltracker_api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+      - cache
+    environment:
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: goaltracker
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+    volumes:
+      - .:/usr/src/app
+    command: npm run start:dev
+
+  # PostgreSQL Database
+  database:
+    image: postgres:16
+    hostname: goaltracker_database
+    container_name: goaltracker_database
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: goaltracker
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+
+  # Redis (Cache)
+  cache:
+    image: redis
+    container_name: goaltracker_cache
+    ports:
+      - "6379:6379"
+
+  # pgAdmin (PostgreSQL Admin UI)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: goaltracker_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+
+  # Mailhog (Development Only)
+  mailhog:
+    image: mailhog/mailhog
+    hostname: goaltracker_mailhog
+    container_name: goaltracker_mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
