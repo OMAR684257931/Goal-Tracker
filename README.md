@@ -1,99 +1,178 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🧠 GoalTracker API (Backend)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Smart Personal & Public Goal Management System — built with **NestJS**, **PostgreSQL**, and **Docker**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This API handles:
 
-## Description
+* 🔐 Authentication (JWT)
+* 🧹 Hierarchical goal creation (up to 2 levels)
+* 🌍 Public goal sharing via `publicId`
+* 📂 Full CRUD with user ownership enforcement
+* 📑 API Documentation via Swagger
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🚀 Stack
 
-```bash
-$ npm install
+| Layer     | Tech                         |
+| --------- | ---------------------------- |
+| Framework | [NestJS](https://nestjs.com) |
+| Database  | PostgreSQL + TypeORM         |
+| Auth      | JWT-based Authentication     |
+| Docs      | Swagger UI                   |
+| Dev Tools | Docker, Mailhog, PgAdmin     |
+| Testing   | Jest                         |
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── auth/           # Login, Register, JWT, Guard
+├── goals/          # Goal entity, controller, service
+├── users/          # User entity and service
+├── seeder.ts       # Simple user seeding
+├── main.ts         # App bootstrap
 ```
 
-## Compile and run the project
+---
+
+## 📦 Installation
+
+### ▶️ Local Setup
 
 ```bash
-# development
-$ npm run start
+# 1. Clone the project
+git clone https://github.com/yourname/goaltracker-api.git
+cd goaltracker-api
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# 2. Start with Docker
+docker-compose up --build
 ```
 
-## Run tests
+### 🌐 Access Services
+
+| Service | URL                                                    |
+| ------- | ------------------------------------------------------ |
+| API     | [http://localhost:3000](http://localhost:3000)         |
+| Swagger | [http://localhost:3000/api](http://localhost:3000/api/doc) |
+| Mailhog | [http://localhost:8025](http://localhost:8025)         |
+| PgAdmin | [http://localhost:5050](http://localhost:5050)         |
+
+---
+
+## 🔑 Authentication
+
+Use the following endpoints to authenticate:
+
+```http
+POST /auth/register
+POST /auth/login
+GET  /auth/profile  (with Bearer token)
+```
+
+> Store the token in `localStorage` or `Authorization: Bearer <token>` for frontend.
+
+---
+
+## 🧹 Goals API
+
+Each goal has:
+
+```ts
+{
+  id: string;
+  title: string;
+  description: string;
+  deadline: string; // ISO
+  isPublic: boolean;
+  parentId?: string;
+  order: number;
+  publicId?: string;
+  ownerId: string;
+}
+```
+
+### Endpoints:
+
+```http
+GET    /goals              # Private goals for authenticated user
+POST   /goals              # Create new goal (max depth: 2)
+PUT    /goals/:id          # Update your goal
+DELETE /goals/:id          # Delete your goal
+
+GET    /goals/public-goals           # Public goals
+GET    /goals/public-goals/:publicId # View a public goal by ID
+```
+
+---
+
+## 🧪 Running Tests
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Unit tests
+npm run test
 ```
 
-## Deployment
+All services like `GoalsService` are tested with mocks, including edge cases (unauthorized, not found, nesting logic).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🐳 Docker Setup
+
+Ensure Docker is installed, then:
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+docker-compose up
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Environment (`.env` or docker-compose)
 
-## Resources
+```
+POSTGRES_DB=goaltracker
+POSTGRES_USER=root
+POSTGRES_PASSWORD=root
+JWT_SECRET=supersecure
+JWT_EXPIRATION=3600s
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## ✅ Why PostgreSQL?
 
-## Support
+✅ Strong data integrity
+✅ Native UUID & JSON support
+✅ Used with TypeORM for full relation modeling
+✅ Ideal for recursive/nested structure with self-relations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 🔖 Features
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+* ⛓ JWT auth with route guards
+* 👎 Parent-child goal nesting (2-level enforced)
+* 🧐 Public ID sharing for public goals
+* 🛡️ Authorization logic on update/delete
+* 📑 Swagger API docs at `/api`
+* ✅ Clean, testable service structure
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📌 Known Limitations
+
+* ❌ No email confirmation (but Mailhog ready)
+* 📬 No pagination on public goals yet
+* 🧱 Drag/drop logic handled only on frontend
+* 🔒 No refresh tokens (only access token)
+
+---
+
+## 👨‍💼 Author
+
+**Omar Eid**
+Senior Full Stack Developer — Laravel | NestJS | Angular | Docker
+🔗 [linkedin.com/in/omar-eid](https://linkedin.com/in/omar-eid)
+
+---
+
